@@ -1,15 +1,34 @@
 package in.athenaeum;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Main {
 
-    public static void main(String[] args) {
-	    Runnable runnable = () -> {
-            System.out.println("Executing " + Thread.currentThread().getName());
-        };
+    public static void main(String[] args) throws InterruptedException {
+        IntWrapper wrapper = new IntWrapper();
 
-	    Thread thread = new Thread(runnable);
-	    thread.setName("Custom Thread");
+        List<Thread> threadList = new ArrayList<>();
 
-	    thread.start(); //  thread.run() launches the task in the main thread
+        for (int i = 0; i < 4; i++) {
+            Thread thread = new Thread(() -> {
+                for (int j = 0; j < 1_000_000; j++) {
+                    wrapper.increment();
+                    wrapper.decrement();
+                }
+            });
+
+            threadList.add(thread);
+        }
+
+        for (Thread t : threadList) {
+            t.start();
+        }
+
+        for (Thread t : threadList) {
+            t.join();
+        }
+
+        System.out.println("Final counter: " + wrapper.getCounter());
     }
 }
