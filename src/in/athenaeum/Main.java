@@ -1,51 +1,36 @@
 package in.athenaeum;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 public class Main {
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-        executorService.submit(() -> {
-            System.out.println("Running a task 1 on: " + Thread.currentThread().getId());
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        //  Using Callable, value can be returned. This is wrapped in Future<V>
+        Future<Integer> future = executorService.submit(() -> {
+            Thread.sleep(500);
+            return 500;
         });
 
-        executorService.submit(() -> {
-            System.out.println("Running a task 2 on: " + Thread.currentThread().getId());
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        System.out.println("Return value: " + future.get());    //  future.get() is blocking
+
+        Future<String> result = executorService.submit(() -> {
+            if (true) {
+                throw new RuntimeException("Oops!");
             }
+
+            return "Hi there!";
         });
 
+        //  When we use Callable, the exception can be propagated from the thread
+        //  Actual exception is wrapped in ExecutionException
+        try {
+            System.out.println("String result: " + result.get());
+        } catch (ExecutionException e) {
+            System.out.println("Caught exception");
+        }
 
-        executorService.submit(() -> {
-            System.out.println("Running a task 3 on: " + Thread.currentThread().getId());
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
-
-
-        executorService.execute(() -> {
-            System.out.println("Running a task 4 on: " + Thread.currentThread().getId());
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
 
         executorService.shutdown();
     }
