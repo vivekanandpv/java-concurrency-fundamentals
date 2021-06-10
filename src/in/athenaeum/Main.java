@@ -8,7 +8,11 @@ public class Main {
 
 	    Thread producerThread = new Thread(() -> {
             for (int i = 0; i < 50; i++) {
-                producer.produce();
+                try {
+                    producer.produce();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
 
             System.out.println("Producer completes");
@@ -16,7 +20,11 @@ public class Main {
 
         Thread consumerThread = new Thread(() -> {
             for (int i = 0; i < 50; i++) {
-                consumer.consume();
+                try {
+                    consumer.consume();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
 
             System.out.println("Consumer completes");

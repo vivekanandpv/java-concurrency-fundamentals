@@ -3,6 +3,7 @@ package in.athenaeum;
 public class Sample {
     private static final int[] buffer = new int[10];
     private static int counter = 0;
+    private static Object lock = new Object();
 
     public static boolean isFull() {
         return buffer.length == counter;
@@ -17,16 +18,26 @@ public class Sample {
     }
 
     static class Producer {
-        void produce() {
-            while(isFull()) {}
-            buffer[counter++] = 1;
+        void produce() throws InterruptedException {
+            synchronized (lock) {
+                if (isFull()) {
+                    lock.wait();
+                }
+                buffer[counter++] = 1;
+                lock.notify();
+            }
         }
     }
 
     static class Consumer {
-        void consume() {
-            while(isEmpty()) {}
-            buffer[--counter] = 0;
+        void consume() throws InterruptedException {
+            synchronized (lock) {
+                if (isEmpty()) {
+                    lock.wait();
+                }
+                buffer[--counter] = 0;
+                lock.notify();
+            }
         }
     }
 }
