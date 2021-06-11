@@ -1,9 +1,15 @@
 package in.athenaeum;
 
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 public class Sample {
     private static final int[] buffer = new int[10];
     private static int counter = 0;
-    private static Object lock = new Object();
+    private static Lock lock = new ReentrantLock();
+    private static Condition notEmpty = lock.newCondition();
+    private static Condition notFull = lock.newCondition();
 
     public static boolean isFull() {
         return buffer.length == counter;
@@ -19,24 +25,30 @@ public class Sample {
 
     static class Producer {
         void produce() throws InterruptedException {
-            synchronized (lock) {
+            try {
+                lock.lock();
                 if (isFull()) {
-                    lock.wait();
+                    notFull.await();
                 }
                 buffer[counter++] = 1;
-                lock.notify();
+                notEmpty.signal();
+            } finally {
+                lock.unlock();
             }
         }
     }
 
     static class Consumer {
         void consume() throws InterruptedException {
-            synchronized (lock) {
+            try {
+                lock.lock();
                 if (isEmpty()) {
-                    lock.wait();
+                    notEmpty.await();
                 }
                 buffer[--counter] = 0;
-                lock.notify();
+                notFull.signal();
+            } finally {
+                lock.unlock();
             }
         }
     }
