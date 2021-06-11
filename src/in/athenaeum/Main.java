@@ -7,13 +7,18 @@ public class Main {
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         //  Single-thread
         ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
-        ExecutorService fixedThreadExecutor = Executors.newFixedThreadPool(4);
-        ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
 
-        //  Scheduled Executor
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(4);
-        scheduledExecutorService.schedule(() -> System.out.println("Hi there"), 2000, TimeUnit.MILLISECONDS);
-        scheduledExecutorService.scheduleAtFixedRate(() -> System.out.println("Hi there"), 2000, 5000, TimeUnit.MILLISECONDS);  //  after initial delay, scheduled at every 5000; start of the task delay
-        scheduledExecutorService.scheduleWithFixedDelay(() -> System.out.println("Hi there"), 2000, 3000, TimeUnit.MILLISECONDS);   //  after initial delay, scheduled 3000 after the previous task; end of the task delay
+        //  shutdown is a graceful method; soft-way
+        //  no further tasks are enqueued
+        //  service will wait for all queued tasks to complete
+
+        //  shutdownNow is a hard way
+        //  halt all the running tasks; do not execute the already queued but yet to start tasks
+        //  then shutdown
+
+        //  awaitTermination(timeout)
+        //  it will first issue a shutdown and waits for the timeout
+        //  if the service is not shutdown, it will do the hard shutdown then
+
     }
 }
