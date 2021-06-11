@@ -16,49 +16,24 @@ public class Main {
 
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
-        ExecutorService service = Executors.newFixedThreadPool(4);
-        List<Future<Integer>> futures = new ArrayList<>();
+        Thread thread = new Thread(() -> {
+            increment();
+        });
 
-        for (int i = 0; i < 4; i++) {
-            Future<Integer> future = service.submit(() -> {
-                for (int j = 0; j < 10_000_000; j++) {
-                    increment();
-                    decrement();
-                }
+        thread.start();
 
-                return 0;
-            });
+        thread.interrupt();
 
-            futures.add(future);
-        }
-
-        for(Future<Integer> f: futures) {
-            f.get();
-        }
-
-
-
-        System.out.println("Final count: " + counter);
-
-        service.shutdown();
-
+        thread.join();
     }
 
     public static void increment() {
         try {
-            lock.lock();
+            lock.lockInterruptibly();
+            Thread.sleep(100);
             ++counter;
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    public static void decrement() {
-        try {
-            lock.lock();
-            --counter;
-        } finally {
-            lock.unlock();
+        } catch (InterruptedException e) {
+            System.out.println("Interrupted...");
         }
     }
 }
