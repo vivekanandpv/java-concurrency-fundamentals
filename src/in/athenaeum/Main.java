@@ -2,10 +2,7 @@ package in.athenaeum;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -34,8 +31,8 @@ public class Main {
         service.shutdown();
     }
 
-    public static void doTask(int i) {
-        if (lock.tryLock()) {
+    public static void doTask(int i) throws InterruptedException {
+        if (lock.tryLock(500, TimeUnit.MILLISECONDS)) {
             try {
                 System.out.println("Starting the task..." + i);
                 Thread.sleep(1000);
