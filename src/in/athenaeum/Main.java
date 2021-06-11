@@ -11,7 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Main {
 
-    private static Lock lock = new ReentrantLock();
+    private static Lock lock = new ReentrantLock(true); //  this is a costly operation
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
         ExecutorService service = Executors.newFixedThreadPool(2);
@@ -35,18 +35,15 @@ public class Main {
     }
 
     public static void doTask(int i) {
-        if (lock.tryLock()) {
-            try {
-                System.out.println("Starting the task..." + i);
-                Thread.sleep(1000);
-                System.out.println("Completing the task..." + i);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } finally {
-                lock.unlock();
-            }
-        } else {
-            System.out.println("Doing another task..." + i);
+        try {
+            lock.lock();
+            System.out.println("Starting the task..." + i);
+            Thread.sleep(200);
+            System.out.println("Completing the task..." + i);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            lock.unlock();
         }
     }
 }
