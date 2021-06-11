@@ -11,29 +11,42 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Main {
 
-    private static int counter = 0;
     private static Lock lock = new ReentrantLock();
 
-
     public static void main(String[] args) throws ExecutionException, InterruptedException {
-        Thread thread = new Thread(() -> {
-            increment();
-        });
+        ExecutorService service = Executors.newFixedThreadPool(2);
+        List<Future<Integer>> futures = new ArrayList<>();
 
-        thread.start();
+        for (int i = 0; i < 4; i++) {
+            int j = i;
+            Future<Integer> future = service.submit(() -> {
+                doTask(j);
+                return 0;
+            });
 
-        thread.interrupt();
+            futures.add(future);
+        }
 
-        thread.join();
+        for(Future<Integer> f : futures) {
+            f.get();
+        }
+
+        service.shutdown();
     }
 
-    public static void increment() {
-        try {
-            lock.lockInterruptibly();
-            Thread.sleep(100);
-            ++counter;
-        } catch (InterruptedException e) {
-            System.out.println("Interrupted...");
+    public static void doTask(int i) {
+        if (lock.tryLock()) {
+            try {
+                System.out.println("Starting the task..." + i);
+                Thread.sleep(1000);
+                System.out.println("Completing the task..." + i);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                lock.unlock();
+            }
+        } else {
+            System.out.println("Doing another task..." + i);
         }
     }
 }
